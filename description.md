@@ -58,10 +58,10 @@ login). Relative links so `/apps/filesync/` works.
 
 ```bash
 # Node (approve the app in Config, or PNET_AUTO_APPROVE_APPS=1 for tests)
-PNET_HTTP_BIND=127.0.0.1 cargo run -p pnet
+PNET_HTTP_BIND=127.0.0.1 cargo run --manifest-path ../pNet/Cargo.toml
 
 # Agent on the same host
-PNET_FILESYNC_DIR=$HOME/pnet-filesync cargo run -p pnet_filesync
+PNET_FILESYNC_DIR=$HOME/pnet-filesync cargo run
 ```
 
 Sign in → Home → **Filesync**. Put files in the folder or upload in the page;
