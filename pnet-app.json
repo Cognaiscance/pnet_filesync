@@ -1,0 +1,10 @@
+{
+  "id": "filesync",
+  "name": "Filesync",
+  "summary": "Folder replica plus portal web viewport.",
+  "placement": "Desktops you want in the set; also the rank-1 SG for always-on web.",
+  "os": "Linux (v1)",
+  "fabric_alias": "filesync",
+  "web_slug": "filesync",
+  "notes": "Approve in Config → Pending Apps unless PNET_AUTO_APPROVE_APPS=1. Intra-user only; not a contact share."
+}
