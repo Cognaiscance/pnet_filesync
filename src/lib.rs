@@ -3,6 +3,7 @@
 //! pNet is a dumb pipe. All file semantics, chunking, and conflict policy
 //! live here. See `description.md`.
 
+pub mod log_setup;
 pub mod fabric;
 pub mod paths;
 pub mod proto;

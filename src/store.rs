@@ -124,7 +124,7 @@ impl Store {
             };
             let size = meta.len();
             if size > MAX_FILE_BYTES {
-                eprintln!("[filesync] skip {} ({} bytes > cap)", rel, size);
+                log::error!("[filesync] skip {} ({} bytes > cap)", rel, size);
                 return;
             }
             let mtime = mtime_secs(&meta);

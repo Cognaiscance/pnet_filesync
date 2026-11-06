@@ -27,6 +27,7 @@ fn home_dir() -> PathBuf {
 }
 
 fn main() {
+    pnet_filesync::log_setup::init("pnet-filesync");
     let web_port: u16 = env_or("PNET_FILESYNC_WEB_PORT", "9090")
         .parse()
         .unwrap_or(9090);
@@ -54,7 +55,7 @@ fn main() {
     let store = Store::open(root.clone(), state_dir).unwrap_or_else(|e| {
         panic!("open store: {e}");
     });
-    println!(
+    log::info!(
         "[filesync] folder {}  state {}  replica {}",
         store.root.display(),
         store.state_dir.display(),
@@ -74,9 +75,9 @@ fn main() {
         match fabric::register(&ctrl, dest, &alias, push_port) {
             Ok(t) => {
                 token = t;
-                println!("[filesync] fabric register ok (approve in Config if needed)");
+                log::info!("[filesync] fabric register ok (approve in Config if needed)");
             }
-            Err(e) => eprintln!("[filesync] fabric register: {e}"),
+            Err(e) => log::error!("[filesync] fabric register: {e}"),
         }
     }
     let engine = Arc::new(Mutex::new(Engine::new(token)));
@@ -91,12 +92,12 @@ fn main() {
             for attempt in 1..=8 {
                 match portal_register(&portal, &slug, web_port, &title) {
                     Ok(()) => {
-                        println!("[filesync] portal /apps/{slug}/ → 127.0.0.1:{web_port}");
+                        log::info!("[filesync] portal /apps/{slug}/ → 127.0.0.1:{web_port}");
                         portal_ok.store(true, Ordering::SeqCst);
                         return;
                     }
                     Err(e) => {
-                        eprintln!("[filesync] portal register {attempt}: {e}");
+                        log::error!("[filesync] portal register {attempt}: {e}");
                         thread::sleep(Duration::from_millis(400));
                     }
                 }
@@ -148,7 +149,7 @@ fn main() {
                         if eng.token != [0u8; 16] {
                             if let Err(e) = eng.refresh_dir(&ctrl, dest, &alias) {
                                 if ticks % 32 == 0 {
-                                    eprintln!("[filesync] get_data: {e}");
+                                    log::error!("[filesync] get_data: {e}");
                                 }
                             }
                         }
@@ -174,7 +175,7 @@ fn main() {
     }
 
     if skip_web {
-        println!("[filesync] running (web disabled)");
+        log::info!("[filesync] running (web disabled)");
         while !stop.load(Ordering::Acquire) {
             thread::sleep(Duration::from_millis(200));
         }
@@ -182,7 +183,7 @@ fn main() {
         let listener = TcpListener::bind(("127.0.0.1", web_port))
             .unwrap_or_else(|e| panic!("bind 127.0.0.1:{web_port}: {e}"));
         listener.set_nonblocking(true).expect("nonblocking");
-        println!("[filesync] web http://127.0.0.1:{web_port}/  (portal /apps/{slug}/)");
+        log::info!("[filesync] web http://127.0.0.1:{web_port}/  (portal /apps/{slug}/)");
         while !stop.load(Ordering::Acquire) {
             match listener.accept() {
                 Ok((stream, _)) => {
@@ -190,7 +191,7 @@ fn main() {
                     let engine = Arc::clone(&engine);
                     thread::spawn(move || {
                         if let Err(e) = web::handle(stream, &store, &engine) {
-                            eprintln!("[filesync] http: {e}");
+                            log::error!("[filesync] http: {e}");
                         }
                     });
                 }
@@ -198,7 +199,7 @@ fn main() {
                     thread::sleep(Duration::from_millis(40));
                 }
                 Err(e) => {
-                    eprintln!("[filesync] accept: {e}");
+                    log::error!("[filesync] accept: {e}");
                     thread::sleep(Duration::from_millis(100));
                 }
             }
@@ -207,10 +208,10 @@ fn main() {
 
     if portal_ok.load(Ordering::SeqCst) {
         if let Err(e) = portal_unregister(&portal, &slug) {
-            eprintln!("[filesync] portal unregister: {e}");
+            log::error!("[filesync] portal unregister: {e}");
         }
     }
-    println!("[filesync] shutdown");
+    log::info!("[filesync] shutdown");
 }
 
 fn portal_register(portal: &str, slug: &str, port: u16, title: &str) -> Result<(), String> {

@@ -13,6 +13,8 @@ name = "pnet_filesync"
 path = "src/main.rs"
 
 [dependencies]
+log = "0.4"
+flexi_logger = "0.31"
 ctrlc = { version = "3", features = ["termination"] }
 getrandom = "0.2"
 sha2 = "0.10"
